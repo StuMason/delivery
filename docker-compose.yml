@@ -1,0 +1,32 @@
+version: "3"
+services:
+    nginx:
+        image: delivery-nginx:${UNIQUE_BUILD_ID}
+        links:
+            - php
+        environment:
+            - PHP_CONTAINER_HOST=php
+        ports:
+            - 80:80
+
+    php:
+        image: delivery-php:${UNIQUE_BUILD_ID}
+        volumes:
+            - ./:/var/www/html
+        links:
+            - db
+
+    db:
+        image: mysql:5.7
+        restart: always
+        volumes:
+            - ./scripts/wait-for-db.sh:/tmp/wait.sh
+            - data:/var/lib/mysql
+        environment:
+            - MYSQL_PASSWORD=secret
+            - MYSQL_DATABASE=delivery
+            - MYSQL_USER=user
+        ports:
+            - 33306:3306
+volumes:
+    data:
