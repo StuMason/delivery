@@ -13,9 +13,9 @@ Name | Username | Email | Number
 -> Orders
 -> Reviews
 
-Vendors
+Restaurant
 ----
-Location | Name | Description | Minimum_order | Contact Number
+Location | Name | Description | Minimum_order | Contact_Number
 -> Location
 -> Dishes
 -> Orders
@@ -23,8 +23,8 @@ Location | Name | Description | Minimum_order | Contact Number
 
 Dish
 ----
-vendor_id | name |description | price
--> Vendor
+restaurant_id | name |description | price
+-> restaurant
 -> Tags
 
 Tags
@@ -38,10 +38,10 @@ dish_id | tags_id
 
 Order
 ----
-vendor_id | user_id | status (confirmed / declined / enroute / delivered)
+restaurant_id | user_id | status (confirmed / declined / enroute / delivered)
 -> dishes
 -> delivery
--> vendor
+-> restaurant
 -> location
 -> customer
 	
@@ -66,7 +66,7 @@ line_1 | line_2 | line_3 | code | county | country | lat_long | meta
 
 Reviews
 ----
-rating | review | reply | customer_id | vendor_id | order_id
+rating | review | reply | customer_id | restaurant_id | order_id
 -> customer
 -> restuarant
 -> order
