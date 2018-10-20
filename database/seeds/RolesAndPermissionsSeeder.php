@@ -26,7 +26,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $role = Role::create(['name' => 'driver']);
         $role->givePermissionTo(['edit order']);
 
-        $role = Role::create(['name' => 'user']);
+        $role = Role::create(['name' => 'customer']);
         $role->givePermissionTo(['create order']);
 
         $role = Role::create(['name' => 'super-admin']);
