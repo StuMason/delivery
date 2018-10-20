@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -e
+set -eu
 
 # This subs in the correct hostname for the PHP container on startup - this is so we can use
 # the same nginx config for both docker-compose (hostname is php) and AWS Fargate (hostname is 127.0.0.1)

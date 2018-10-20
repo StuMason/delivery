@@ -15,7 +15,7 @@ Name | Username | Email | Number
 
 Restaurant
 ----
-Location | Name | Description | Minimum_order | Contact_Number
+Location | Name | Description | Minimum_order | Contact_Number | status | open | opening_times
 -> Location
 -> Dishes
 -> Orders

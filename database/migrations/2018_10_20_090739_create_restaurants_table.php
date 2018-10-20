@@ -17,6 +17,9 @@ class CreateRestaurantsTable extends Migration
             $table->string('description');
             $table->float('minimum_order');
             $table->string('contact_number');
+            $table->boolean('open');
+            $table->enum('status', ['pending', 'verified', 'contact']);
+            $table->json('opening_times');
             $table->timestamps();
         });
     }
