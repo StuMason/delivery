@@ -17,4 +17,12 @@ class Restaurant extends Model
         'minimum_order',
         'contact_number',
     ];
+
+    /**
+     * Get all of the restaurants's locations.
+     */
+    public function locations()
+    {
+        return $this->morphMany(Location::class, 'locationable');
+    }
 }

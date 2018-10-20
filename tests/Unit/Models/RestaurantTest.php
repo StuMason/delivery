@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use Tests\TestCase;
 use App\Models\Restaurant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Models\Location;
 
 class RestaurantTest extends TestCase
 {
@@ -26,5 +27,15 @@ class RestaurantTest extends TestCase
     {
         $restaurant = factory(Restaurant::class)->create();
         $this->assertNotNull(Restaurant::find($restaurant->id));
+    }
+
+    public function testRestaurantIsLocationable()
+    {
+        $restaurant = factory(Restaurant::class)->create();
+        $location = factory(Location::class)->create([
+            'line_3' => 'Folkestone',
+        ]);
+        $restaurant->locations()->save($location);
+        $this->assertEquals($restaurant->locations->first()->line_3, 'Folkestone');
     }
 }
