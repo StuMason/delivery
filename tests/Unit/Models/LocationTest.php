@@ -25,10 +25,10 @@ class LocationTest extends TestCase
     public function testLocationIsLocationable()
     {
         $restaurant = factory(Restaurant::class)->create([
-            'name' => 'Uno Mas',
+            'name' => 'Foo',
         ]);
         $location = factory(Location::class)->create();
         $restaurant->locations()->save($location);
-        $this->assertEquals($location->locationable->first()->name, 'Uno Mas');
+        $this->assertEquals($location->locationable->first()->name, 'Foo');
     }
 }

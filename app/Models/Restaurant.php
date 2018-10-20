@@ -25,4 +25,20 @@ class Restaurant extends Model
     {
         return $this->morphMany(Location::class, 'locationable');
     }
+
+    /**
+     * Get the dishes for the restaurant.
+     */
+    public function dishes()
+    {
+        return $this->hasMany(Dish::class);
+    }
+
+    /**
+     * The tags associated with this restaurant.
+     */
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
 }

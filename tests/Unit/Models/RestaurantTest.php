@@ -3,9 +3,11 @@
 namespace Tests\Unit\Models;
 
 use Tests\TestCase;
+use App\Models\Tag;
+use App\Models\Dish;
+use App\Models\Location;
 use App\Models\Restaurant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use App\Models\Location;
 
 class RestaurantTest extends TestCase
 {
@@ -33,9 +35,31 @@ class RestaurantTest extends TestCase
     {
         $restaurant = factory(Restaurant::class)->create();
         $location = factory(Location::class)->create([
-            'line_3' => 'Folkestone',
+            'line_3' => 'Foo',
         ]);
         $restaurant->locations()->save($location);
-        $this->assertEquals($restaurant->locations->first()->line_3, 'Folkestone');
+        $this->assertEquals($restaurant->locations->first()->line_3, 'Foo');
+    }
+
+    public function testRestaurantHasDishes()
+    {
+        $restaurant = factory(Restaurant::class)->create();
+        $dishes = factory(Dish::class, 10)->create();
+        $restaurant->dishes()->saveMany($dishes);
+        $this->assertEquals($restaurant->dishes->count(), 10);
+    }
+
+    public function testTagCanBeAssignedToRestaurant()
+    {
+        $restaurant = factory(Restaurant::class)->create([
+            'name' => 'Foo',
+        ]);
+
+        $tag = factory(Tag::class)->create([
+            'tag' => 'Bar',
+        ]);
+
+        $tag->restaurants()->attach($tag);
+        $this->assertEquals($restaurant->tags->first()->tag, 'Bar');
     }
 }
