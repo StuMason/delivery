@@ -23,9 +23,8 @@ services:
             - ./scripts/wait-for-db.sh:/tmp/wait.sh
             - data:/var/lib/mysql
         environment:
-            - MYSQL_PASSWORD=secret
             - MYSQL_DATABASE=delivery
-            - MYSQL_USER=user
+            - MYSQL_ROOT_PASSWORD=secret
         ports:
             - 33306:3306
 volumes:
