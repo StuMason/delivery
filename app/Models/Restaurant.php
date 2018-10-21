@@ -19,7 +19,7 @@ class Restaurant extends Model
     ];
 
     /**
-     * Get all of the restaurants's locations.
+     * Get all of the restaurant's locations.
      */
     public function locations()
     {
@@ -40,5 +40,13 @@ class Restaurant extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * The user associated with this restaurant.
+     */
+    public function owners()
+    {
+        return $this->belongsToMany(User::class);
     }
 }

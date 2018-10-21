@@ -7,6 +7,7 @@ use App\Models\Tag;
 use App\Models\Dish;
 use App\Models\Location;
 use App\Models\Restaurant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class RestaurantTest extends TestCase
@@ -61,5 +62,19 @@ class RestaurantTest extends TestCase
 
         $tag->restaurants()->attach($tag);
         $this->assertEquals($restaurant->tags->first()->tag, 'Bar');
+    }
+
+    public function testRestaurantHasOwner()
+    {
+        $restaurant = factory(Restaurant::class)->create([
+            'name' => 'Foo',
+        ]);
+
+        $user = factory(User::class)->create([
+            'name' => 'Bar',
+        ]);
+
+        $restaurant->owners()->attach($user);
+        $this->assertEquals($restaurant->owners->first()->name, 'Bar');
     }
 }
