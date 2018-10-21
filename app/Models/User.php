@@ -28,4 +28,20 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Get all of the user's locations.
+     */
+    public function locations()
+    {
+        return $this->morphMany(Location::class, 'locationable');
+    }
+
+    /**
+     * Get all of the user's restaurants.
+     */
+    public function restaurants()
+    {
+        return $this->belongsToMany(Restaurant::class);
+    }
 }

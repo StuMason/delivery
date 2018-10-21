@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Location;
 use App\Models\Restaurant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Models\User;
 
 class LocationTest extends TestCase
 {
@@ -22,7 +23,7 @@ class LocationTest extends TestCase
         $this->assertNotNull($location->meta);
     }
 
-    public function testLocationIsLocationable()
+    public function testLocationCanHaveARestaurant()
     {
         $restaurant = factory(Restaurant::class)->create([
             'name' => 'Foo',
@@ -30,5 +31,15 @@ class LocationTest extends TestCase
         $location = factory(Location::class)->create();
         $restaurant->locations()->save($location);
         $this->assertEquals($location->locationable->first()->name, 'Foo');
+    }
+
+    public function testLocationCanHaveAUser()
+    {
+        $user = factory(User::class)->create([
+            'name' => 'Bar',
+        ]);
+        $location = factory(Location::class)->create();
+        $user->locations()->save($location);
+        $this->assertEquals($location->locationable->first()->name, 'Bar');
     }
 }

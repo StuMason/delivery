@@ -22,6 +22,11 @@ class CreateRestaurantsTable extends Migration
             $table->json('opening_times');
             $table->timestamps();
         });
+
+        Schema::create('restaurant_user', function (Blueprint $table) {
+            $table->integer('restaurant_id')->unsigned();
+            $table->integer('user_id')->unsigned();
+        });
     }
 
     /**
