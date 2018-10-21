@@ -16,7 +16,7 @@ class UserTest extends TestCase
     {
         $user = factory(User::class)->create();
         $this->assertNotNull($user->name);
-        $this->assertNotNull($user->eamil);
+        $this->assertNotNull($user->email);
     }
 
     public function testUserOwnsRestaurant()

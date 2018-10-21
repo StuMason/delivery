@@ -35,4 +35,12 @@ class Dish extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
+
+    /**
+     * The orders associated with this dish.
+     */
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class);
+    }
 }
