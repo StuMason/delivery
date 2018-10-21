@@ -19,4 +19,10 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+Route::prefix('location')->name('location.')->group(function () {
+    Route::get('create', 'LocationController@create')->name('create');
+});
+
+Route::get('/admin', 'AdminController@index')->name('admin');
+
 Route::get('/restaurants', 'RestaurantController@index')->name('restaurants.index');
