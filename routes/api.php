@@ -23,8 +23,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
     })->name('index');
     Route::prefix('restaurants')->name('restaurants.')->group(function () {
         Route::get('/', 'Api\V1\RestaurantApiController@index')->name('index');
-        // Route::post('/', 'Api\V1\RestaurantApiController@store')->name('store');
-        // Route::get('/{id}', 'Api\V1\RestaurantApiController@show')->name('show');
+        Route::post('/', 'Api\V1\RestaurantApiController@store')->name('store');
+        Route::get('/{id}', 'Api\V1\RestaurantApiController@show')->name('show');
         // Route::put('/{id}', 'Api\V1\RestaurantApiController@update')->name('update');
         // Route::delete('/{id}', 'Api\V1\RestaurantApiController@destroy')->name('destroy');
     });

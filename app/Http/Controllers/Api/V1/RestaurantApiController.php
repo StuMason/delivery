@@ -29,17 +29,24 @@ class RestaurantApiController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedInput = $request->validate(Restaurant::$validation);
+        dD('he');
+        $restaurant = (new Restaurant())->fill($validatedInput);
+        $restaurant->save();
+
+        return response()->json(['data' => $restaurant]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\Restaurant $restaurant
+     * @param int $id restaurant ID
      *
      * @return \Illuminate\Http\Response
      */
-    public function show(Restaurant $restaurant)
+    public function show(int $restaurant_id)
     {
+        return response()->json(['data' => Restaurant::find($restaurant_id)]);
     }
 
     /**
