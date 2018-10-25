@@ -26,6 +26,7 @@ class RestaurantController extends Controller
      */
     public function create()
     {
+        return view('restaurants.create');
     }
 
     /**
@@ -37,6 +38,7 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->input());
     }
 
     /**
@@ -48,6 +50,7 @@ class RestaurantController extends Controller
      */
     public function show(Restaurant $restaurant)
     {
+        return view('restaurants.show', compact('restaurant'));
     }
 
     /**

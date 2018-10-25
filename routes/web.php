@@ -26,3 +26,6 @@ Route::prefix('location')->name('location.')->group(function () {
 Route::get('/admin', 'AdminController@index')->name('admin');
 
 Route::get('/restaurants', 'RestaurantController@index')->name('restaurants.index');
+Route::get('/restaurants/create', 'RestaurantController@create')->name('restaurants.create');
+Route::get('/restaurants/{restaurant}', 'RestaurantController@show')->name('restaurants.show');
+Route::post('/restaurants', 'RestaurantController@store')->name('restaurants.store');
