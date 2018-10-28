@@ -1,0 +1,528 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Delivery Service
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Environment
+        Parameters:
+          - Environment
+
+      - Label:
+          default: Network & Security
+        Parameters:
+          - VpcId
+          - PublicSubnets
+          - PrivateSubnets
+          - RDSSecurityGroupId
+          - CertificateArn
+
+      - Label:
+          default: API Application Variables
+        Parameters:
+          - LogChannel
+          - Environment
+          - AppDebug
+          - CacheDriver
+          - QueueDriver
+          - AllowSeedDb
+
+      - Label:
+          default: Datasource Variables
+        Parameters:
+          - RDSHost
+          - RDSPort
+          - RDSDatabase
+          - RDSUsername
+          - RDSPassword
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - production
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PublicSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+  PrivateSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+  RDSSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  CertificateArn:
+    Type: String
+  
+  LogChannel:
+    Type: String
+    Default: errorlog
+  AppDebug:
+    Type: String
+    Default: true
+  CacheDriver:
+    Type: String
+    Default: array
+  QueueDriver:
+    Type: String
+    Default: "null"
+  AllowSeedDb:
+    Type: String
+    Default: false
+  RDSHost:
+    Type: String
+  RDSPort:
+    Type: String
+  RDSDatabase:
+    Type: String
+  RDSUsername:
+    Type: String
+  RDSPassword:
+    Type: String
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub delivery-${Environment}-closter
+
+  ECSService:
+    DependsOn: LoadBalancerListener
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub delivery-${Environment}-service
+      Cluster: !Ref ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 0
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: nginx
+          ContainerPort: 80
+          TargetGroupArn: !Ref ECSTargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets: !Ref PublicSubnets
+      TaskDefinition: !Ref TaskDefinition
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: '256'
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
+      Family: !Sub delivery-${Environment}-family
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/delivery-${Environment}-ecs
+      ContainerDefinitions:
+      - Name: nginx
+        Essential: true
+        Image: !Ref NginxRepository
+        MemoryReservation: 256
+        PortMappings:
+        - ContainerPort: 80
+        - ContainerPort: 443
+        Environment:
+        - Name: APP_ENV
+          Value: !Sub ${Environment}
+        - Name: PHP_CONTAINER_HOST
+          Value: "127.0.0.1"
+        LogConfiguration:
+          LogDriver: "awslogs"
+          Options: 
+            awslogs-group: !Sub /ecs/delivery-${Environment}
+            awslogs-region: us-east-1
+            awslogs-stream-prefix: ecs
+      - Name: app
+        Essential: true
+        Image: !Ref AppRepository
+        MemoryReservation: 256
+        PortMappings:
+        - ContainerPort: 9000
+        Environment:
+        - Name: LOG_CHANNEL
+          Value: !Ref LogChannel
+        - Name: APP_ENV
+          Value: !Ref Environment
+        - Name: APP_DEBUG
+          Value: !Ref AppDebug
+        - Name: DB_HOST
+          Value: !Ref RDSHost
+        - Name: DB_PORT
+          Value: !Ref RDSPort
+        - Name: DB_DATABASE
+          Value: !Ref RDSDatabase
+        - Name: DB_USERNAME
+          Value: !Ref RDSUsername
+        - Name: CACHE_DRIVER
+          Value: !Ref CacheDriver
+        - Name: QUEUE_DRIVER
+          Value: !Ref QueueDriver
+        - Name: ALLOW_DB_SEED
+          Value: !Ref AllowSeedDb
+        - Name: AWS_REGION
+          Value: !Sub ${AWS::Region}
+        LogConfiguration:
+          LogDriver: "awslogs"
+          Options: 
+            awslogs-group: !Sub /ecs/delivery-${Environment}
+            awslogs-region: !Sub ${AWS::Region}
+            awslogs-stream-prefix: ecs
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub delivery-${Environment}-lb
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: 30
+      Subnets: !Ref PublicSubnets
+      SecurityGroups: [!Ref LoadBalancerSecurityGroup]
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSTargetGroup
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+
+  LoadBalancerListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - "/*"
+      ListenerArn: !Ref LoadBalancerListener
+      Priority: 1
+
+  ECSTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: LoadBalancer
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /check/health
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: !Sub delivery-${Environment}-ecs-tg
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VpcId
+      TargetType: ip
+
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !FindInMap [Environments, !Ref Environment, hostName]
+      AliasTarget:
+        DNSName: !GetAtt LoadBalancer.DNSName
+        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+      HostedZoneId: !FindInMap [Environments, !Ref Environment, hostedZoneId]
+      Type: A
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public HTTP access
+      GroupName: !Sub delivery-${Environment}-public
+      VpcId: !Ref VpcId
+
+  LoadBalancerPublicHttps:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref LoadBalancerSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Cluster Security groups
+      GroupName: !Sub delivery-${Environment}-ecs
+      VpcId: !Ref VpcId
+
+  ECSLoadBalancerHttpSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ECSSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+
+  EC2RDSSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RDSSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref ECSSecurityGroup
+
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/delivery-${Environment}
+      RetentionInDays: 7
+
+  EcsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub delivery-${Environment}-ecs
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ecs-tasks.amazonaws.com]
+            Action: ["sts:AssumeRole"]
+      Path: /
+
+  NginxRepository:
+    Type: AWS::ECR::Repository
+    DeletionPolicy: Retain
+    Properties:
+      RepositoryName: !Sub delivery-${Environment}-nginx
+  
+  AppRepository:
+    Type: AWS::ECR::Repository
+    DeletionPolicy: Retain
+    Properties:
+      RepositoryName: !Sub delivery-${Environment}-app
+
+  CodeRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: delivery
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub delivery-${Environment}-codebuild
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ecr:GetAuthorizationToken
+              - Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetObjectVersion
+              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${NginxRepository}
+                Effect: Allow
+                Action:
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:PutImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${AppRepository}
+                Effect: Allow
+                Action:
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:PutImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub delivery-${Environment}-pipeline
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource:
+                  - !Sub arn:aws:s3:::${ArtifactBucket}/*
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - ecs:DescribeServices
+                  - ecs:DescribeTaskDefinition
+                  - ecs:DescribeTasks
+                  - ecs:ListTasks
+                  - ecs:RegisterTaskDefinition
+                  - ecs:UpdateService
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - iam:PassRole
+              - Resource: !GetAtt CodeRepository.Arn
+                Effect: Allow
+                Action:
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:UploadArchive
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:CancelUploadArchive
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub delivery-${Environment}-codebuild
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            pre_build:
+              commands:
+                - $(aws ecr get-login --no-include-email)
+                - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+                - APP_IMAGE_URI="${APP_REPOSITORY_URI}:${TAG}"
+                - NGINX_IMAGE_URI="${NGINX_REPOSITORY_URI}:${TAG}"
+            build:
+              commands:
+                - docker build --tag "$APP_IMAGE_URI" -f docker/php/Dockerfile .
+                - docker build --tag "$NGINX_IMAGE_URI" -f docker/nginx/Dockerfile .
+            post_build:
+              commands:
+                - docker push "$APP_IMAGE_URI"
+                - docker push "$NGINX_IMAGE_URI"
+                - printf '[{"name":"app","imageUri":"%s"}, {"name":"nginx","imageUri":"%s"}]' "$APP_IMAGE_URI" "$NGINX_IMAGE_URI" > images.json
+          artifacts:
+            files: images.json
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/docker:17.09.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: APP_REPOSITORY_URI
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppRepository}
+          - Name: NGINX_REPOSITORY_URI
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NginxRepository}
+      Name: !Ref AWS::StackName
+      ServiceRole: !Ref CodeBuildServiceRole
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub delivery-${Environment}-codepipeline
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: App
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              Configuration:
+                RepositoryName: !GetAtt CodeRepository.Name
+                BranchName: master
+              OutputArtifacts:
+                - Name: App
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: App
+              OutputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: ECS
+              Configuration:
+                ClusterName: !Ref ECSCluster
+                ServiceName: !Ref ECSService
+                FileName: images.json
+              InputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 1
+
+Outputs:
+  ECSCluster:
+    Value: !Ref ECSCluster
+  LoadBalancer:
+    Description: Your LoadBalancer DNS URL
+    Value: !Join ["", [!GetAtt [LoadBalancer, DNSName]]]
+  ApplicationURL:
+    Description: The URL the application can be found at
+    Value: !Ref DNSRecord
+  PipelineUrl:
+    Value: !Sub https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${Pipeline}
+  CloneUrlHttp:
+    Value: !GetAtt CodeRepository.CloneUrlHttp

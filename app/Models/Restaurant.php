@@ -7,21 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Restaurant extends Model
 {
     /**
-     * Validation Array.
-     *
-     * @var array
-     */
-    public static $validation = [
-        'name' => 'required|string|min:3',
-        'description' => 'required|string|min:10',
-        'minimum_order' => 'integer',
-        'contact_number' => 'required',
-        'status' => 'in:verfied,pending,shut',
-        'open' => 'boolean',
-        'opening_times' => 'required',
-    ];
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var array

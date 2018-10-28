@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
+use App\Http\Requests\CreateRestaruant;
 
 class RestaurantController extends Controller
 {
@@ -26,17 +27,19 @@ class RestaurantController extends Controller
      */
     public function create()
     {
-        return view('restaurants.create');
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        return view('restaurants.create', compact('days'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param CreateRestaruant
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateRestaruant $request)
     {
         dd($request->input());
     }
