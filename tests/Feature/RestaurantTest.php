@@ -26,22 +26,30 @@ class RestaurantTest extends TestCase
         $response->assertSeeText($restaurant->name);
     }
 
-    // public function testRestaurantStore()
-    // {
-    //     $restuarant = [
-    //         'name' => 'Foo',
-    //         'description' => 'This is a good restaurant',
-    //         'minimum_order' => 5,
-    //         'contact_number' => '01303 445 677',
-    //         'status' => 'pending', //verified - pending - shut
-    //         'open' => 0,
-    //         'opening_times' => '{"monday" : ["10-11", "5-7"], "tuesday" : ["10-11", "5-7"]}',
-    //     ];
-    //     $response = $this->post('/api/v1/restaurants', $restuarant);
-    //     $response->assertStatus(200);
-    //     $content = json_decode($response->getContent());
-    //     $this->assertEquals('Foo', $content->data->name, 'Unable to save posted restaurant');
-    // }
+    public function testRestaurantStore()
+    {
+        $restuarant = [
+            'name' => 'Foo',
+            'description' => 'This is a good restaurant',
+            'minimum_order' => 5,
+            'contact_number' => '01303 445 677',
+            'status' => 'pending', //verified - pending - shut
+            'open' => 0,
+            'openingTimes' => [
+                'monday' => ['open' => 11, 'close' => 11],
+                'tuesday' => ['closed' => 'on'],
+                'wednesday' => ['open' => 11, 'close' => 11],
+                'thursday' => ['open' => 11, 'close' => 11],
+                'friday' => ['open' => 11, 'close' => 11],
+                'saturday' => ['open' => 11, 'close' => 11],
+                'sunday' => ['open' => 11, 'close' => 11],
+            ],
+        ];
+
+        $response = $this->post('/restaurants/create', $restuarant);
+        $response->assertStatus(200);
+        $response->assertSeeText($restaurant->name);
+    }
 
     // public function testRestaurantStoreValidation()
     // {

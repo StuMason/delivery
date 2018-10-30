@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
-use App\Http\Requests\CreateRestaruant;
+use App\Http\Requests\CreateRestaurant;
+use App\Models\OpeningTimes;
 
 class RestaurantController extends Controller
 {
@@ -35,13 +36,26 @@ class RestaurantController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param CreateRestaruant
+     * @param CreateRestaurant
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(CreateRestaruant $request)
+    public function store(CreateRestaurant $request)
     {
-        dd($request->input());
+        $restaurant = new Restaurant();
+        $restaurant->fill($request->input())->save();
+        collect($request->input()->openingTimes)->each(function ($time, $day) use ($restuarant) {
+            dd($time, $day);
+            $time = new OpeningTimes();
+            $time->restaurant_id = $restaurant->id;
+            $time->day = $day;
+            $time->closed = isset($time['closed']) ? true : false;
+            $time->open = $time['open'];
+            $time->close = $time['close'];
+            $time->save();
+        });
+
+        dd($restaurant->with('openingTimes'));
     }
 
     /**

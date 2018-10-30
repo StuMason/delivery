@@ -28,7 +28,9 @@
                             <textarea   type="text" 
                                         name="description" 
                                         class="form-control @if($errors->has('description')) is-invalid @endif" 
-                                        aria-describedby="descHelp">{{ old('description') }}</textarea>
+                                        aria-describedby="descHelp">
+                                        Burritos and Tacos
+                                        {{ old('description') }}</textarea>
                             @if($errors->has('description')) 
                                 <div class="invalid-feedback">{{$errors->first('description')}}</div>
                             @endif
@@ -70,36 +72,37 @@
                             <div class="form-group col-md-4">
                                 <input  type="text" 
                                         name="openingTimes[{{$day}}][open]" 
-                                        class="form-control"
+                                        class='form-control @if($errors->has("openingTimes.{$day}.open")) is-invalid @endif'
                                         placeholder="{{ucwords($day)}} open e.g. 10:00"
                                         value='{{ old("openingTimes.{$day}.open") }}'>
-                                @if($errors->has("openingTimes-$day-open")) 
+                                @if($errors->has("openingTimes.{$day}.open")) 
                                     <div class="invalid-feedback">{{$errors->first("openingTimes.{$day}.open")}}</div>
                                 @endif
                             </div>
                             <div class="form-group col-md-4">
                                 <input  type="text" 
                                         name="openingTimes[{{$day}}][close]"
-                                        class="form-control"
+                                        class='form-control @if($errors->has("openingTimes.{$day}.close")) is-invalid @endif'
                                         placeholder="{{ucwords($day)}} close e.g. 22:00"
                                         value='{{ old("openingTimes.{$day}.close") }}'>
-                                @if($errors->has("openingTimes-$day-close")) 
+                                @if($errors->has("openingTimes.{$day}.close")) 
                                     <div class="invalid-feedback">{{$errors->first("openingTimes.{$day}.close")}}</div>
                                 @endif
                             </div>
                             <div class="form-check col-md-3 form-check-inline">
                                 <input  type="checkbox" 
-                                        name="openingTimes-{{$day}}-closed"
+                                        name="openingTimes[{{$day}}][closed]"
                                         class="form-check-input"
                                         @if(old("openingTimes.{$day}.closed")) checked @endif>
-                                <label  class="form-check-label" for="openingTimes[{{$day}}]closed">Closed</label>
+                                <label  class="form-check-label" for="openingTimes[{{$day}}][closed]">Closed</label>
+                                @if($errors->has("openingTimes.{$day}.closed")) 
+                                    <div class="invalid-feedback">{{$errors->first("openingTimes.{$day}.closed")}}</div>
+                                @endif
                             </div>
                         </div>
                         @endforeach
-                        
-                        
-
-
+                        <input type="hidden" name="open" value=1>
+                        <input type="hidden" name="status" value=pending>
                         <input type=submit value="Submit" class="btn btn-primary" />
                     </form>
                 </div>

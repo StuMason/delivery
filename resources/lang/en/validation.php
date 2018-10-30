@@ -124,11 +124,13 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'openingTimes.*.open' => [
+            'required_unless' => 'Enter a time or check "closed"',
+        ],
+        'openingTimes.*.close' => [
+            'required_unless' => 'Enter a time or check "closed"',
         ],
     ],
-
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes
