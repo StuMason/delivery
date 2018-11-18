@@ -15,9 +15,28 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/newsletter-signup', function () {
+    //newsletter signup
+    dd("store request('email') and send a little thank you");
+});
+
+Route::prefix('pages')->name('pages.')->group(function () {
+    Route::get('/about', function () { return view('pages.about'); })->name('about');
+    Route::get('/journal', function () { return view('pages.journal'); })->name('journal');
+    Route::get('/jobs', function () { return view('pages.jobs'); })->name('jobs');
+    Route::get('/feedback', function () { return view('pages.feedback'); })->name('feedback');
+    Route::get('/help', function () { return view('pages.help'); })->name('help');
+    Route::prefix('legal')->name('legal.')->group(function () {
+        Route::get('/terms-and-conditions', function () { return view('pages.legal.terms-and-conditions'); })->name('terms');
+        Route::get('/privacy', function () { return view('pages.legal.privacy'); })->name('privacy');
+        Route::get('/cookies', function () { return view('pages.legal.cookies'); })->name('cookies');
+    });
+});
+
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::post('/search', 'SearchController@search')->name('search.location');
+Route::get('/search', 'SearchController@redirect')->name('search.redirect');
 
 Route::prefix('location')->name('location.')->group(function () {
     Route::get('create', 'LocationController@create')->name('create');
