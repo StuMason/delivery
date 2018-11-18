@@ -60,7 +60,7 @@ start: ## Start main containers
 stop: ## Stop containers
 	$(DOCKER_COMPOSE) stop
 
-test-unit: ## Run PHPUnit tests
+test: ## Run PHPUnit tests
 	APP_ENV="test" make wait-for-db migrate-fresh run-unit
 
 run-unit: ## run phpunit alone
@@ -77,6 +77,9 @@ watch-logs: ## Tail the docker logs
 
 wait-for-db: ## Run the script/wait-for-db.sh script
 	$(DOCKER_COMPOSE) exec -T db /tmp/wait.sh
+
+tail:
+	tail -n 300 -f storage/logs/laravel.log
 
 .SILENT: help
 help: ## Show this help message

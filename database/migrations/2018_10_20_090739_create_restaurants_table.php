@@ -19,7 +19,6 @@ class CreateRestaurantsTable extends Migration
             $table->string('contact_number');
             $table->boolean('open');
             $table->enum('status', ['pending', 'verified', 'contact']);
-            $table->json('opening_times');
             $table->timestamps();
         });
 

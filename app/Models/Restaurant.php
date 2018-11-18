@@ -18,7 +18,6 @@ class Restaurant extends Model
         'contact_number',
         'status',
         'open',
-        'opening_times',
     ];
 
     /**

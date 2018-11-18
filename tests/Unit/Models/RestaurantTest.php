@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Models\OpeningTimes;
 
 class RestaurantTest extends TestCase
 {
@@ -22,7 +23,6 @@ class RestaurantTest extends TestCase
         $this->assertNotNull($restaurant->minimum_order);
         $this->assertNotNull($restaurant->contact_number);
         $this->assertNotNull($restaurant->open);
-        $this->assertNotNull($restaurant->opening_times);
         $this->assertNotNull($restaurant->status);
     }
 
@@ -76,5 +76,17 @@ class RestaurantTest extends TestCase
 
         $restaurant->owners()->attach($user);
         $this->assertEquals($restaurant->owners->first()->name, 'Bar');
+    }
+
+    public function testRestaurantHasOpeningTimes()
+    {
+        $restaurant = factory(Restaurant::class)->create([
+            'name' => 'Foo',
+        ]);
+
+        $openingTimes = factory(OpeningTimes::class, 7)->create();
+
+        $restaurant->openingTimes()->saveMany($openingTimes);
+        $this->assertNotNull($restaurant->openingTimes->first()->day);
     }
 }

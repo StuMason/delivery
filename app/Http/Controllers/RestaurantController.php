@@ -44,8 +44,8 @@ class RestaurantController extends Controller
     {
         $restaurant = new Restaurant();
         $restaurant->fill($request->input())->save();
-        collect($request->input()->openingTimes)->each(function ($time, $day) use ($restuarant) {
-            dd($time, $day);
+
+        collect($request->input('openingTimes'))->each(function ($time, $day) use ($restaurant) {
             $time = new OpeningTimes();
             $time->restaurant_id = $restaurant->id;
             $time->day = $day;
@@ -55,7 +55,7 @@ class RestaurantController extends Controller
             $time->save();
         });
 
-        dd($restaurant->with('openingTimes'));
+        return redirect("restaurants/{$restaurant->id}");
     }
 
     /**

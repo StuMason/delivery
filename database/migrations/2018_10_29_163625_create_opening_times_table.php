@@ -15,9 +15,9 @@ class CreateOpeningTimesTable extends Migration
             $table->increments('id');
             $table->integer('restaurant_id');
             $table->enum('day', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
-            $table->boolean('closed');
-            $table->time('open');
-            $table->time('close');
+            $table->boolean('closed')->default(false);
+            $table->time('open')->nullable();
+            $table->time('close')->nullable();
             $table->timestamps();
         });
     }

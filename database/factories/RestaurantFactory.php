@@ -10,6 +10,5 @@ $factory->define(App\Models\Restaurant::class, function (Faker $faker) {
         'contact_number' => $faker->phoneNumber,
         'status' => 'verified', //verified - pending - shut
         'open' => true,
-        'opening_times' => '{"monday" : ["10-11", "5-7"], "tuesday" : ["10-11", "5-7"]}',
     ];
 });

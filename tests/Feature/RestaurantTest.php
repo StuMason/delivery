@@ -28,7 +28,7 @@ class RestaurantTest extends TestCase
 
     public function testRestaurantStore()
     {
-        $restuarant = [
+        $restaurant = [
             'name' => 'Foo',
             'description' => 'This is a good restaurant',
             'minimum_order' => 5,
@@ -46,32 +46,20 @@ class RestaurantTest extends TestCase
             ],
         ];
 
-        $response = $this->post('/restaurants/create', $restuarant);
-        $response->assertStatus(200);
-        $response->assertSeeText($restaurant->name);
+        $response = $this->post('/restaurants', $restaurant);
+        $response->assertStatus(302);
+        $response->assertRedirect('/restaurants/1');
     }
 
-    // public function testRestaurantStoreValidation()
-    // {
-    //     $restuarant = [
-    //         'name' => 'Fo',
-    //         'description' => 'Restaurant',
-    //         'minimum_order' => 'string',
-    //         'contact_number' => 3,
-    //         'status' => 'not-in-list', //verified - pending - shut
-    //         'open' => 4,
-    //     ];
-    //     $response = $this->json('POST', '/api/v1/restaurants', $restuarant);
-    //     $content = json_decode($response->getContent());
-    //     $this->assertEquals('The given data was invalid.', $content->message);
-    // }
+    public function testRestaurantStoreValidation()
+    {
+        $restuarant = [
+            'name' => 'Fo',
+            'description' => 'Restaurant',
+            'minimum_order' => 'string',
+            'status' => 'not-in-list', //verified - pending - shut
+s,        ];
 
-    // public function testRestaurantShow()
-    // {
-    //     $restaurant = factory(Restaurant::class)->create(['name' => 'Bar']);
-    //     $response = $this->json('GET', "/api/v1/restaurants/{$restaurant->id}");
-    //     $response->assertStatus(200);
-    //     $content = json_decode($response->getContent());
-    //     $this->assertEquals('Bar', $content->data->name, 'Unable to show the created restaurant');
-    // }
+        $response = $this->post('/restaurants', $restuarant);
+    }
 }
