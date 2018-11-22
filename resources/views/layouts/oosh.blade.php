@@ -2,24 +2,43 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"/>
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>Oosh</title>
 
-        <!-- CSRF Token -->
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/manifest.json">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Oosh') }}</title>
 
         <!-- Compiled and minified CSS -->
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
-        <!-- Styles -->
-        <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     </head>
     <body>
-        <nav class="light-blue lighten-1" role="navigation">
+        <noscript>
+            You need to enable JavaScript to run Oosh.
+        </noscript>
+        <div id="app"></div>
+        <!-- <nav class="light-blue lighten-1" role="navigation">
             <div class="nav-wrapper container">
                 <a id="logo-container" href="/" class="brand-logo">Oosh</a>  
                 <ul class="right">
@@ -29,7 +48,7 @@
         </nav>
 
         <ul class="sidenav" id="nav-mobile">
-            <!-- <li><a href="#">Navbar Link</a></li> -->
+            <li><a href="#">Navbar Link</a></li>
             @auth
                 <li><a href="{{ url('/home') }}">Home</a></li>
             @else
@@ -38,11 +57,11 @@
                     <li><a href="{{ route('register') }}">Register</a></li>
                 @endif
             @endauth
-        </ul>
+        </ul> -->
 
         @yield('content')
 
-        <footer class="page-footer orange">
+        <!-- <footer class="page-footer orange">
             <div class="container">
                 <div class="row">
                     <div class="col l6 s12">
@@ -75,11 +94,9 @@
                     Made by <a class="orange-text text-lighten-3" href="http://oosh.it">Oosh</a> in Folkestone
                 </div>
             </div>
-        </footer>
+        </footer> -->
 
         <!-- Scripts -->
-        <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
         <script src="{{ asset('js/app.js') }}" defer></script>
     </body>
 </html>

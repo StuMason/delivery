@@ -2,14 +2,14 @@ version: "3"
 services:
     nginx:
         image: delivery-nginx:${UNIQUE_BUILD_ID}
-        links:
-            - php
         environment:
             - PHP_CONTAINER_HOST=php
         ports:
             - 8080:80
         volumes:
             - ./:/var/www/html
+        links:
+            - php
 
     php:
         image: delivery-php:${UNIQUE_BUILD_ID}

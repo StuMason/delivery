@@ -1,10 +1,5 @@
-ifndef COMPOSE_PROJECT_NAME
-	COMPOSE_PROJECT_NAME=delivery
-endif
-
-ifndef UNIQUE_BUILD_ID
-	UNIQUE_BUILD_ID=local
-endif
+export COMPOSE_PROJECT_NAME=delivery
+export UNIQUE_BUILD_ID=$(git rev-parse --verify HEAD)
 
 # User & Group ID used in Dockerfile for correcting permissions
 UID=$(shell id -u `whoami`)

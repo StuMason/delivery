@@ -1,7 +1,8 @@
-@extends('layouts.pages')
+@extends('layouts.oosh')
 
 @section('content')
-<div class="container">
+<!-- <Example></Example> -->
+<!-- <div class="container">
     <div class="row">
         <div class="col s12">
             <h1>Folkestone, delivered.</h1>
@@ -28,5 +29,5 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 @endsection
